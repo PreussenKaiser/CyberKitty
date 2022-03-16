@@ -1,7 +1,8 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 
-namespace CyberKitty;
+namespace CyberKitty.Commands;
 
 /// <summary>
 /// Handles commands for a CyberKitty client.
@@ -27,6 +28,7 @@ public class CommandHandler
         this.client = client;
 
         this.client.MessageReceived += this.HandleCommandAsync;
+        this.client.ButtonExecuted += this.HandleButtonPress;
     }
 
     /// <summary>
@@ -39,10 +41,10 @@ public class CommandHandler
     }
 
     /// <summary>
-    /// 
+    /// Parses and handles valid commands.
     /// </summary>
-    /// <param name="messageParam"></param>
-    /// <returns></returns>
+    /// <param name="messageParam">The command sent to the bot.</param>
+    /// <returns>If the task was completed or not.</returns>
     private async Task HandleCommandAsync(SocketMessage messageParam)
     {
         if (messageParam is not SocketUserMessage message)
@@ -58,46 +60,67 @@ public class CommandHandler
         switch (message.Content)
         {
             case "!create":
-                this.CreateTask(message);
+                await this.ActOnClubTaskAsync(message, "create");
                 
                 break;
             
             case "!update":
-                this.UpdateTask(message);
+                await this.ActOnClubTaskAsync(message, "update");
                 
                 break;
             
             case "!delete":
-                this.DeleteTask(message);
+                await this.ActOnClubTaskAsync(message, "delete");
                 
+                break;
+            
+            case "!help":
+                this.ReplyHelp(message);
+                
+                break;
+            
+            default:
+                await message.Channel.SendMessageAsync(
+                    "Unknown command, enter '!help' for a list of commands.");
+
                 break;
         }
     }
 
     /// <summary>
-    /// Handles creation commands.
+    /// 
     /// </summary>
-    /// <param name="message">The entered create command.</param>
-    private void CreateTask(SocketUserMessage message)
+    /// <param name="message"></param>
+    /// <param name="action"></param>
+    private async Task ActOnClubTaskAsync(SocketUserMessage message, string action)
     {
-        message.Channel.SendMessageAsync("What would you like to create?");
-    }
-    
-    /// <summary>
-    /// Handles update commands.
-    /// </summary>
-    /// <param name="message">The entered update command.</param>
-    private void UpdateTask(SocketUserMessage message)
-    {
-        message.Channel.SendMessageAsync("What would you like to update?");
+        var builder = new ComponentBuilder()
+            .WithButton("Meeting", $"{action}_meeting")
+            .WithButton("Event", $"{action}_event");
+
+        await message.ReplyAsync(
+            $"What would you like to {action}?",
+            components: builder.Build());
     }
 
     /// <summary>
-    /// Handles delete commands.
+    /// Prints a list of commands for the bot.
     /// </summary>
-    /// <param name="message">The entered delete command.</param>
-    private void DeleteTask(SocketUserMessage message)
+    private void ReplyHelp(SocketUserMessage message)
     {
-        message.Channel.SendMessageAsync("What would you like to delete?");
+        message.Channel.SendMessageAsync(
+            "!create: Create a task." +
+            "\n!update: Update a task." +
+            "\n!delete: Delete a task.");
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="component"></param>
+    /// <returns></returns>
+    private async Task HandleButtonPress(SocketMessageComponent component)
+    {
+        await component.RespondAsync($"You pressed {component.Data.CustomId}");
     }
 }

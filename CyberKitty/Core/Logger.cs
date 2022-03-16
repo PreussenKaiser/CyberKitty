@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 
-namespace CyberKitty;
+namespace CyberKitty.Core;
 
 /// <summary>
 /// Handles logging for the CyberKitty bot.
