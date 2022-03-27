@@ -1,46 +1,37 @@
-﻿using CyberKitty.Commands;
-using CyberKitty.Core;
+﻿using CyberKitty.Services;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CyberKitty;
 
 /// <summary>
 /// The main entry point for the bot.
 /// </summary>
-public class Program
+internal class Program
 {
     /// <summary>
-    /// The bots client.
+    /// 
     /// </summary>
-    private readonly DiscordSocketClient client;
+    private IConfiguration config;
 
     /// <summary>
-    /// Handles commands for the client.
-    /// </summary>
-    private readonly CommandHandler commandHandler;
-
-    /// <summary>
-    /// Logs events to the console.
-    /// </summary>
-    private readonly Logger logger;
-
-    /// <summary>
-    /// Initializes a new instance of the CyberKitty bot.
+    /// Initializes a new instance of the Program entrypoint.
     /// </summary>
     private Program()
     {
-        this.client = new DiscordSocketClient();
-        this.commandHandler = CommandHandler.GetInstance(this.client);
-        this.logger = Logger.GetInstance(this.client);
+        this.config = this.BuildConfig();
     }
-
+    
     /// <summary>
     /// Translates the main entrypoint to the asynchronous entrypoint.
     /// </summary>
     /// <param name="args">Console arguments.</param>
     /// <returns>If the task was completed.</returns>
-    public static Task Main(string[] args) => new Program().MainAsync();
+    private static void Main(string[] args)
+        => new Program().MainAsync().GetAwaiter().GetResult();
 
     /// <summary>
     /// The main entrypoint for the bot.
@@ -48,11 +39,55 @@ public class Program
     /// <returns>If the task was completed.</returns>
     private async Task MainAsync()
     {
-        string token = await File.ReadAllTextAsync(@"token.txt");
+        await using var services = this.ConfigureServices();
 
-        await this.client.LoginAsync(TokenType.Bot, token);
-        await this.client.StartAsync();
+        var client = services.GetRequiredService<DiscordSocketClient>();
+        Logger logger = new(client);
+        
+        await client.LoginAsync(TokenType.Bot, this.config["token"]);
+        await client.StartAsync();
 
-        await Task.Delay(-1);
+        await services.GetRequiredService<CommandHandler>().InitializeAsync();
+
+        await Task.Delay(Timeout.Infinite);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="log"></param>
+    /// <returns></returns>
+    private Task LogAsync(LogMessage log)
+    {
+        Console.WriteLine(log.ToString());
+        
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    private ServiceProvider ConfigureServices()
+    {
+        return new ServiceCollection()
+            .AddSingleton<DiscordSocketClient>()
+            .AddSingleton<CommandService>()
+            .AddSingleton<CommandHandler>()
+            .AddSingleton<Logger>()
+            .AddSingleton<TaskService>()
+            .BuildServiceProvider();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    private IConfiguration BuildConfig()
+    {
+        return new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile(@"config.json")
+            .Build();
     }
 }
