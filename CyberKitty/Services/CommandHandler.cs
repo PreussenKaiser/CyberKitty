@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CyberKitty.Services;
@@ -108,28 +109,11 @@ public class CommandHandler
     }
 
     /// <summary>
-    /// Prints a list of commands for the bot.
-    /// </summary>
-    private void ReplyHelp(SocketUserMessage message)
-    {
-        message.Channel.SendMessageAsync
-        (
-            "!create: Create a task." +
-            "\n!update: Update a task." +
-            "\n!delete: Delete a task."
-        );
-    }
-    
-    /// <summary>
     /// Parses button presses.
     /// </summary>
     /// <param name="component">The button that was pressed.</param>
     /// <returns>If the task was completed or not.</returns>
     private async Task ButtonExecuted(SocketMessageComponent component)
     {
-        await component.RespondAsync
-        (
-            $"You pressed {component.Data.CustomId}"
-        );
     }
 }

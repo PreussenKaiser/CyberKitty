@@ -1,6 +1,7 @@
 ﻿using CyberKitty.Services;
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,7 +48,8 @@ internal class Program
         await client.LoginAsync(TokenType.Bot, this.config["token"]);
         await client.StartAsync();
 
-        await services.GetRequiredService<CommandHandler>().InitializeAsync();
+        //await services.GetRequiredService<CommandHandler>().InitializeAsync();
+        await services.GetRequiredService<InteractionHandler>().InitializeAsync();
 
         await Task.Delay(Timeout.Infinite);
     }
@@ -74,6 +76,8 @@ internal class Program
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
+            .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
+            .AddSingleton<InteractionHandler>()
             .AddSingleton<Logger>()
             .AddSingleton<TaskService>()
             .BuildServiceProvider();
