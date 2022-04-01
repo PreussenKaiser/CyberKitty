@@ -1,6 +1,5 @@
 ﻿using CyberKitty.Modules.Modals;
 using CyberKitty.Services;
-using Discord;
 using Discord.Interactions;
 
 namespace CyberKitty.Modules;
@@ -36,7 +35,7 @@ public class EventModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("read", "Get a list of all events.")]
     public async Task Read()
     {
-        // will reply with all events
+        // reply with all events
     }
 
     /// <summary>
@@ -60,16 +59,31 @@ public class EventModule : InteractionModuleBase<SocketInteractionContext>
     [ModalInteraction("create_event")]
     public async Task CreateResponse(CreateEventModal modal)
     {
-        // Build the message to send.
-        string message = "hey @everyone, I just learned " +
-                         $"{Context.User.Mention}'s favorite food is " +
-                         $"{modal.Title} because {modal.Location}.";
+        await this.RespondAsync
+        (
+            "Event created!\n" +
+            $"What: {modal.Name}\n" +
+            $"When: {modal.Location}\n" +
+            $"Where: {modal.Date}\n\n" +
+            $"Details: {modal.Details}"
+        );
+    }
 
-        // Specify the AllowedMentions so we don't actually ping everyone.
-        AllowedMentions mentions = new();
-        mentions.AllowedTypes = AllowedMentionTypes.Users;
+    /// <summary>
+    /// Handles the response for the update modal.
+    /// </summary>
+    /// <param name="model">The modal to respond to.</param>
+    [ModalInteraction("update_event")]
+    public async Task UpdateResponse(UpdateEventModal model)
+    {
+    }
 
-        // Respond to the modal.
-        await this.RespondAsync(message, allowedMentions: mentions, ephemeral: true);
+    /// <summary>
+    /// Handles the response for the delete modal.
+    /// </summary>
+    /// <param name="model">The modal to respond to.</param>
+    [ModalInteraction("delete_event")]
+    public async Task DeleteResponse(DeleteEventModal model)
+    {
     }
 }

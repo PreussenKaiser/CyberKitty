@@ -74,7 +74,6 @@ internal class Program
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
             .AddSingleton<InteractionHandler>()
-            .AddSingleton<ClubContext>()
             .BuildServiceProvider();
     }
 
