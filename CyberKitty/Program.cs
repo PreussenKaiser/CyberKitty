@@ -1,8 +1,8 @@
 ﻿using CyberKitty.Services;
 using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,17 +14,15 @@ namespace CyberKitty;
 internal class Program
 {
     /// <summary>
-    /// 
+    /// The configuration for the bot.
     /// </summary>
-    private IConfiguration config;
+    private readonly IConfiguration config;
 
     /// <summary>
     /// Initializes a new instance of the Program entrypoint.
     /// </summary>
     private Program()
-    {
-        this.config = this.BuildConfig();
-    }
+        => this.config = this.BuildConfig();
     
     /// <summary>
     /// Translates the main entrypoint to the asynchronous entrypoint.
@@ -48,17 +46,16 @@ internal class Program
         await client.LoginAsync(TokenType.Bot, this.config["token"]);
         await client.StartAsync();
 
-        //await services.GetRequiredService<CommandHandler>().InitializeAsync();
-        await services.GetRequiredService<InteractionHandler>().InitializeAsync();
+        await services.GetRequiredService<InteractionHandler>()
+            .InitializeAsync();
 
         await Task.Delay(Timeout.Infinite);
     }
 
     /// <summary>
-    /// 
+    /// Logs client processes to the console.
     /// </summary>
-    /// <param name="log"></param>
-    /// <returns></returns>
+    /// <param name="log">The message to log.</param>
     private Task LogAsync(LogMessage log)
     {
         Console.WriteLine(log.ToString());
@@ -67,24 +64,22 @@ internal class Program
     }
 
     /// <summary>
-    /// 
+    /// Loads dependency injection services.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Services for injection.</returns>
     private ServiceProvider ConfigureServices()
     {
         return new ServiceCollection()
+            .AddDbContext<ClubContext>()
             .AddSingleton<DiscordSocketClient>()
-            .AddSingleton<CommandService>()
-            .AddSingleton<CommandHandler>()
             .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
             .AddSingleton<InteractionHandler>()
-            .AddSingleton<Logger>()
-            .AddSingleton<TaskService>()
+            .AddSingleton<ClubContext>()
             .BuildServiceProvider();
     }
 
     /// <summary>
-    /// 
+    /// Initializes application configuration.
     /// </summary>
     /// <returns></returns>
     private IConfiguration BuildConfig()

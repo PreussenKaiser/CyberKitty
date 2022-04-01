@@ -6,12 +6,12 @@ namespace CyberKitty.Services;
 /// <summary>
 /// The database context to query club activities.
 /// </summary>
-public class TaskService : DbContext
+public class ClubContext : DbContext
 {
     /// <summary>
     /// Club tasks from the database.
     /// </summary>
-    public DbSet<ClubTask> ClubTasks { get; set; }
+    public DbSet<ClubEvent> ClubEvents { get; set; }
 
     /// <summary>
     /// 
@@ -28,6 +28,6 @@ public class TaskService : DbContext
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ClubTask>().ToTable("Tasks");
+        modelBuilder.Entity<ClubEvent>().ToTable("Events");
     }
 }

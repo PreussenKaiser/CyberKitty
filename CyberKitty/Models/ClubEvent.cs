@@ -3,33 +3,33 @@
 namespace CyberKitty.Models;
 
 /// <summary>
-/// The class that represents a club task.
+/// The class that represents a club event.
 /// </summary>
-public class ClubTask
+public class ClubEvent
 {
     /// <summary>
-    /// The unique identifier for the task.
+    /// The unique identifier for the event.
     /// </summary>
     [Key]
     public int Id { get; init; }
     
     /// <summary>
-    /// The title of the task.
+    /// The name of the event.
     /// </summary>
-    public string Title { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
-    /// The description of the task.
+    /// The description of the event.
     /// </summary>
-    public string Description { get; set; }
+    public string Details { get; set; }
     
     /// <summary>
-    /// Where the task takes place.
+    /// Where the event takes place.
     /// </summary>
     public string Location { get; set; }
     
     /// <summary>
-    /// When the task happens.
+    /// When the event occurs.
     /// </summary>
     public DateTime Date { get; set; }
 }

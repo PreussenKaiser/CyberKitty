@@ -9,15 +9,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CyberKitty.Migrations
 {
-    [DbContext(typeof(TaskService))]
-    partial class TaskServiceModelSnapshot : ModelSnapshot
+    [DbContext(typeof(ClubContext))]
+    partial class ClubContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.0-preview.2.22153.1");
 
-            modelBuilder.Entity("CyberKitty.Models.ClubTask", b =>
+            modelBuilder.Entity("CyberKitty.Models.ClubEvent", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -26,7 +26,7 @@ namespace CyberKitty.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("Details")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -34,13 +34,13 @@ namespace CyberKitty.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tasks", (string)null);
+                    b.ToTable("Events", (string)null);
                 });
 #pragma warning restore 612, 618
         }

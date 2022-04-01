@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using IResult = Discord.Commands.IResult;
 
 namespace CyberKitty.Services;
 
@@ -69,10 +69,21 @@ public class InteractionHandler
     /// <param name="interaction"></param>
     private async Task HandleInteraction(SocketInteraction interaction)
     {
-        var result = await this.interactions.ExecuteCommandAsync
-        (
-            new SocketInteractionContext(this.client, interaction),
-            this.services
-        );
+        try
+        {
+            await this.interactions.ExecuteCommandAsync
+            (
+                new SocketInteractionContext(this.client, interaction),
+                this.services
+            );
+        }
+        catch
+        {
+            if (interaction.Type is InteractionType.ApplicationCommand)
+                await interaction
+                    .GetOriginalResponseAsync()
+                    .ContinueWith(async (msg) 
+                        => await msg.Result.DeleteAsync());
+        }
     }
 }
