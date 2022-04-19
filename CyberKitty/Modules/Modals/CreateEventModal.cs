@@ -39,5 +39,5 @@ public class CreateEventModal : IModal
     /// </summary>
     [InputLabel("Date")]
     [ModalTextInput("date", placeholder: "2022-09-31 16:32", maxLength: 64)]
-    public DateTime Date { get; set; }
+    public string Date { get; set; }
 }

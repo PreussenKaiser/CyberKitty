@@ -1,5 +1,7 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CyberKitty.Services;
 
@@ -11,18 +13,28 @@ public class Logger
     /// <summary>
     /// Attaches log events.
     /// </summary>
-    /// <param name="client">The client to attack logging to.</param>
-    public Logger(DiscordSocketClient client)
-        => client.Log += this.LogAsync;
+    /// <param name="services">The service provider to inject with.</param>
+    public Logger(IServiceProvider services)
+        => services
+            .GetRequiredService<DiscordSocketClient>()
+            .Log += this.LogAsync;
 
     /// <summary>
     /// Logs messages to the console.
     /// </summary>
-    /// <param name="log">The log to write.</param>
+    /// <param name="message">The log to write.</param>
     /// <returns>If the task was completed or not.</returns>
-    private Task LogAsync(LogMessage log)
+    private Task LogAsync(LogMessage message)
     {
-        Console.WriteLine(log.ToString());
+        if (message.Exception is CommandException cmdException)
+        {
+            Console.WriteLine($"[Command/{message.Severity}] {cmdException.Command.Aliases.First()}"
+                              + $" failed to execute in {cmdException.Context.Channel}.");
+            Console.WriteLine(cmdException);
+        }
+        else 
+            Console.WriteLine($"[General/{message.Severity}] {message}");
+
         return Task.CompletedTask;
     }
 }

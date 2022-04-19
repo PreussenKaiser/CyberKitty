@@ -31,5 +31,15 @@ public class ClubEvent
     /// <summary>
     /// When the event occurs.
     /// </summary>
-    public DateTime Date { get; set; }
+    public string Date { get; set; }
+
+    /// <summary>
+    /// Converts the event to a string.
+    /// </summary>
+    /// <returns>The string representation of a club event.</returns>
+    public override string ToString()
+        => $"{this.Name}\n" +
+               $"{this.Location}\n" +
+               $"{this.Date}\n\n" +
+               $"{this.Details}";
 }

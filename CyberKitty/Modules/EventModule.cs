@@ -1,27 +1,29 @@
-﻿using CyberKitty.Modules.Modals;
+﻿using CyberKitty.Models;
+using CyberKitty.Modules.Modals;
 using CyberKitty.Services;
 using Discord.Interactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace CyberKitty.Modules;
 
 /// <summary>
 /// The module that's responsible for event commands.
 /// </summary>
-[Group("event", "Commands for events.")]
 public class EventModule : InteractionModuleBase<SocketInteractionContext>
 {
     /// <summary>
-    /// The database context to use.
+    /// The database to club query events with.
     /// </summary>
-    private readonly ClubContext db;
+    private readonly ClubContext database;
 
     /// <summary>
     /// Initializes a new instance of the EventModule module.
     /// </summary>
-    /// <param name="db">The database context to use.</param>
-    public EventModule(ClubContext db)
-        => this.db = db;
-
+    public EventModule()
+    {
+        this.database = new ClubContext();
+    }
+    
     /// <summary>
     /// Creates a club event.
     /// </summary>
@@ -35,7 +37,13 @@ public class EventModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("read", "Get a list of all events.")]
     public async Task Read()
     {
-        // reply with all events
+        string msg = string.Empty;
+
+        await this.database.ClubEvents.ForEachAsync(e => 
+            msg += e + "\n"
+        );
+
+        await this.RespondAsync(msg);
     }
 
     /// <summary>
@@ -59,13 +67,21 @@ public class EventModule : InteractionModuleBase<SocketInteractionContext>
     [ModalInteraction("create_event")]
     public async Task CreateResponse(CreateEventModal modal)
     {
+        this.database.Add(new ClubEvent()
+        {
+            Name = modal.Name,
+            Details = modal.Details,
+            Location = modal.Location,
+            Date = modal.Date
+        });
+
         await this.RespondAsync
         (
             "Event created!\n" +
-            $"What: {modal.Name}\n" +
-            $"When: {modal.Location}\n" +
-            $"Where: {modal.Date}\n\n" +
-            $"Details: {modal.Details}"
+            $"**What:** {modal.Name}\n" +
+            $"**When:** {modal.Location}\n" +
+            $"**Where:** {modal.Date}\n" +
+            $"**Details:** {modal.Details}"
         );
     }
 
@@ -86,4 +102,5 @@ public class EventModule : InteractionModuleBase<SocketInteractionContext>
     public async Task DeleteResponse(DeleteEventModal model)
     {
     }
+    
 }

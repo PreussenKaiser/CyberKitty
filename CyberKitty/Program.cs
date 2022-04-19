@@ -2,7 +2,6 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -41,7 +40,7 @@ internal class Program
         await using var services = this.ConfigureServices();
 
         var client = services.GetRequiredService<DiscordSocketClient>();
-        Logger logger = new(client);
+        Logger logger = new(services);
         
         await client.LoginAsync(TokenType.Bot, this.config["token"]);
         await client.StartAsync();
@@ -53,24 +52,12 @@ internal class Program
     }
 
     /// <summary>
-    /// Logs client processes to the console.
-    /// </summary>
-    /// <param name="log">The message to log.</param>
-    private Task LogAsync(LogMessage log)
-    {
-        Console.WriteLine(log.ToString());
-        
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
     /// Loads dependency injection services.
     /// </summary>
     /// <returns>Services for injection.</returns>
     private ServiceProvider ConfigureServices()
     {
         return new ServiceCollection()
-            .AddDbContext<ClubContext>()
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
             .AddSingleton<InteractionHandler>()
