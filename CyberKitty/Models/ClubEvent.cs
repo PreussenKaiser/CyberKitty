@@ -16,22 +16,22 @@ public class ClubEvent
     /// <summary>
     /// The name of the event.
     /// </summary>
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// The description of the event.
     /// </summary>
-    public string Details { get; set; }
-    
+    public string? Details { get; set; }
+
     /// <summary>
     /// Where the event takes place.
     /// </summary>
-    public string Location { get; set; }
-    
+    public string? Location { get; set; }
+
     /// <summary>
     /// When the event occurs.
     /// </summary>
-    public string Date { get; set; }
+    public string? Date { get; set; }
 
     /// <summary>
     /// Converts the event to a string.

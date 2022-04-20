@@ -6,12 +6,12 @@ namespace CyberKitty.Modules.Modals;
 /// <summary>
 /// The modal displays inputs for creating an event.
 /// </summary>
-public class CreateEventModal : IModal
+public class EventModal : IModal
 {
     /// <summary>
     /// The title of the modal.
     /// </summary>
-    public virtual string Title => "Create Event";
+    public string Title => "Event";
 
     /// <summary>
     /// What the event is about.
@@ -40,4 +40,15 @@ public class CreateEventModal : IModal
     [InputLabel("Date")]
     [ModalTextInput("date", placeholder: "2022-09-31 16:32", maxLength: 64)]
     public string Date { get; set; }
+
+    /// <summary>
+    /// Converts the club event into a string.
+    /// </summary>
+    /// <returns>A string representation of a club event.</returns>
+    public override string ToString()
+        => "Event created!\n" +
+           $"**What:** {this.Name}\n" +
+           $"**When:** {this.Location}\n" +
+           $"**Where:** {this.Date}\n" +
+           $"**Details:** {this.Details}";
 }

@@ -14,20 +14,25 @@ public class ClubContext : DbContext
     public DbSet<ClubEvent> ClubEvents { get; set; }
 
     /// <summary>
-    /// 
+    /// Contains the connection string to the SQL server database.
     /// </summary>
-    /// <param name="optionsBuilder"></param>
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    private readonly string connectionString;
+
+    /// <summary>
+    /// Initializes the connection.
+    /// </summary>
+    public ClubContext()
     {
-        optionsBuilder.UseSqlite("Data Source=ClubDB.db");
+        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var path = Environment.GetFolderPath(folder);
+
+        this.connectionString = Path.Join(path, "club.db");
     }
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="modelBuilder"></param>
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<ClubEvent>().ToTable("Events");
-    }
+    /// <param name="options"></param>
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+        => options.UseSqlite($"Data Source={this.connectionString}");
 }

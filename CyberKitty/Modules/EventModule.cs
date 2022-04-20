@@ -1,8 +1,10 @@
 ﻿using CyberKitty.Models;
 using CyberKitty.Modules.Modals;
 using CyberKitty.Services;
+using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CyberKitty.Modules;
 
@@ -19,17 +21,15 @@ public class EventModule : InteractionModuleBase<SocketInteractionContext>
     /// <summary>
     /// Initializes a new instance of the EventModule module.
     /// </summary>
-    public EventModule()
-    {
-        this.database = new ClubContext();
-    }
+    public EventModule(IServiceProvider services)
+        => this.database = services.GetRequiredService<ClubContext>();
     
     /// <summary>
     /// Creates a club event.
     /// </summary>
     [SlashCommand("create", "Creates an event.")]
     public async Task Create()
-        => await this.RespondWithModalAsync<CreateEventModal>("create_event");
+        => await this.RespondWithModalAsync<EventModal>("create_event");
 
     /// <summary>
     /// Displays all club events along with their details.
@@ -37,11 +37,17 @@ public class EventModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("read", "Get a list of all events.")]
     public async Task Read()
     {
+        var events = await this.database.ClubEvents.ToListAsync();
         string msg = string.Empty;
 
-        await this.database.ClubEvents.ForEachAsync(e => 
-            msg += e + "\n"
-        );
+        if (!events.Any())
+        {
+            msg = "There are no scheduled events";
+        }
+        else
+        {
+            events.ForEach(e => msg += $"{e}\n");
+        }
 
         await this.RespondAsync(msg);
     }
@@ -51,56 +57,101 @@ public class EventModule : InteractionModuleBase<SocketInteractionContext>
     /// </summary>
     [SlashCommand("update", "Edit the properties of an event.")]
     public async Task Update()
-        => await this.RespondWithModalAsync<UpdateEventModal>("update_event");
+    {
+
+    }
 
     /// <summary>
     /// Deletes the specified event.
     /// </summary>
     [SlashCommand("delete", "Remove an event.")]
     public async Task Delete()
-        => await this.RespondWithModalAsync<DeleteEventModal>("delete_event");
+    {
+        var menu = new SelectMenuBuilder()
+            .WithPlaceholder("Select the event")
+            .WithCustomId("event_delete");
+
+        if (this.BuildEventsSelect(ref menu))
+        {
+            var builder = new ComponentBuilder()
+                .WithSelectMenu(menu);
+
+            await this.RespondAsync(components: builder.Build());
+        }
+        else
+        {
+            await this.RespondAsync("There are no events to delete.");
+        }
+    }
 
     /// <summary>
     /// Handles the response for the create modal.
     /// </summary>
     /// <param name="modal">The modal to respond to.</param>
     [ModalInteraction("create_event")]
-    public async Task CreateResponse(CreateEventModal modal)
+    public async Task CreateResponse(EventModal modal)
     {
-        this.database.Add(new ClubEvent()
+        var clubEvent = new ClubEvent()
         {
             Name = modal.Name,
             Details = modal.Details,
             Location = modal.Location,
             Date = modal.Date
-        });
+        };
 
-        await this.RespondAsync
-        (
-            "Event created!\n" +
-            $"**What:** {modal.Name}\n" +
-            $"**When:** {modal.Location}\n" +
-            $"**Where:** {modal.Date}\n" +
-            $"**Details:** {modal.Details}"
-        );
+        await this.database.AddAsync(clubEvent);
+        await this.database.SaveChangesAsync();
+
+        await this.RespondAsync($"Event created!\n{clubEvent}");
     }
 
     /// <summary>
-    /// Handles the response for the update modal.
+    /// Handles the response for the delete_event selection.
     /// </summary>
-    /// <param name="model">The modal to respond to.</param>
-    [ModalInteraction("update_event")]
-    public async Task UpdateResponse(UpdateEventModal model)
+    /// <param name="selectedEvent"></param>
+    /// <returns></returns>
+    [ComponentInteraction("event_delete")]
+    public async Task DeleteResponse(string[] selectedEvent)
     {
+        var events = await this.database.ClubEvents.ToListAsync();
+        var clubEvent = events.Find(e => e.Id == int.Parse(selectedEvent[0]));
+        var response = string.Empty;
+
+        if (clubEvent is null)
+        {
+            response = "There was a problem deleting the event";
+        }
+        else
+        {
+            this.database.Remove(clubEvent);
+            await this.database.SaveChangesAsync();
+
+            response = $"{clubEvent.Name} has been deleted";
+        }
+
+        await this.RespondAsync(response);
     }
 
     /// <summary>
-    /// Handles the response for the delete modal.
+    /// Builds a select menu with current events.
     /// </summary>
-    /// <param name="model">The modal to respond to.</param>
-    [ModalInteraction("delete_event")]
-    public async Task DeleteResponse(DeleteEventModal model)
+    /// <param name="customId">The custom id to apply to the menu.</param>
+    /// <returns>The built select menu.</returns>
+    private bool BuildEventsSelect(ref SelectMenuBuilder menu)
     {
+        var events = this.database.ClubEvents.ToList();
+
+        if (!events.Any())
+            return false;
+
+        foreach (ClubEvent clubEvent in events)
+            menu.AddOption
+            (
+                clubEvent.Name,
+                clubEvent.Id.ToString(),
+                clubEvent.Details
+            );
+
+        return true;
     }
-    
 }

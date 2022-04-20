@@ -1,4 +1,5 @@
-﻿using CyberKitty.Services;
+﻿using CyberKitty.Models;
+using CyberKitty.Services;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -61,6 +62,7 @@ internal class Program
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
             .AddSingleton<InteractionHandler>()
+            .AddDbContext<ClubContext>()
             .BuildServiceProvider();
     }
 
